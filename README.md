@@ -1,6 +1,6 @@
 # Harvest Project Search
 
-Harvest Project Search is a Greasemonkey script that makes the project select box on [Harvest](http://www.getharvest.com/) time reporting page searchable using the Chosen prototype plugin. 
+Harvest Project Search is a user script that makes the project select box on [Harvest](http://www.getharvest.com/) time reporting page searchable using the Chosen prototype plugin. 
 
 ## How to get userscript support
 
