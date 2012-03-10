@@ -22,7 +22,7 @@ var wrapper = function(){
 
     },
 
-    prepareSettings: function(){
+    prepareSettingsCache: function(){
 
       if(hps.hasSettingsStorage() == 'localStorage'){
 
@@ -33,12 +33,10 @@ var wrapper = function(){
         var settings = localStorage.getItem('hpsSettings');
             hps.settings = hps.settings ? hps.settings : settings ? JSON.parse(settings) : {};
 
-        return hps.settings;
-
       }
 
     },
-    setSettings: function(settingsToSet){
+    setSettingsCache: function(settingsToSet){
 
       for(var i in settingsToSet){
 
@@ -80,7 +78,7 @@ var wrapper = function(){
             Event.observe(el, 'change', hps.projTaskSelectChange);
           });
 
-          hps.prepareSettings();
+          hps.prepareSettingsCache();
 
           Event.observe(window, "beforeunload", function(event) {
 
@@ -107,7 +105,7 @@ var wrapper = function(){
 
       settings.defaults[activeProjId] = activeTaskId;
 
-      hps.setSettings(settings);
+      hps.setSettingsCache(settings);
 
       return false;
     }
