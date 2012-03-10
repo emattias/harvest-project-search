@@ -5,33 +5,167 @@
 // @include        https://*.harvestapp.com/*
 // ==/UserScript==
 
-// var console = unsafeWindow.console;
+var wrapper = function(){
 
-var hp = {
+  hps = {
 
-  init: function(){
+    projSelect: document.getElementById('project_selector'),
 
-    select = document.getElementById('project_selector');
+    hasSettingsStorage: function(){
+    //Abstracted wrapper function for possible future cookie storage..
 
-    if(select != undefined){
+      // if localStorage is present, use that
+      if (('localStorage' in window) && window.localStorage !== null) {
+        return 'localStorage'; //return a string of type of storage if multiple types(cookies mayb)
+      }
+      return false;
 
-      new Chosen(select);
+    },
 
-      var styleElement = document.createElement("style");
-      styleElement.type = "text/css";
-      styleElement.appendChild(document.createTextNode('.select_overflow{ overflow:visible !important; } #project_selector_chzn{ margin-bottom:10px; min-width:290px !important; } div.chzn-container ul.chzn-results li{ padding: 4px 7px; } .chzn-results li.group-option{ padding-left: 14px !important; } .chzn-drop { width: 288px !important; } .chzn-search input{ width: 270px !important; }'));
-      document.getElementsByTagName("head")[0].appendChild(styleElement);
+    prepareSettings: function(){
 
+      if(hps.hasSettingsStorage() == 'localStorage'){
+
+        if(hps.settings != undefined){
+          return hps.settings;
+        }
+
+        var settings = localStorage.getItem('hpsSettings');
+            hps.settings = hps.settings ? hps.settings : settings ? JSON.parse(settings) : {};
+
+        return hps.settings;
+
+      }
+
+    },
+    setSettings: function(settingsToSet){
+
+      for(var i in settingsToSet){
+
+        if(typeof(settingsToSet[i]) == 'object'){
+          hps.settings[i] = Object.extend(hps.settings[i], settingsToSet[i]);
+        }
+
+      }
+
+    },
+    saveSettings: function(){
+
+      localStorage.setItem('hpsSettings', JSON.stringify(hps.settings));
+
+    },
+    init: function(){
+
+      if(hps.projSelect != undefined){
+
+        // Chosenize select
+        new Chosen(hps.projSelect);
+
+        // // Add Set default buttons
+        // var aDiv = document.createElement('div');
+        // $(aDiv).addClassName('hps-btns-wrapper');
+        // $(aDiv).update('<a id="set-def-btn" href="#" onclick="hps.setAsDef(\'global\'); return false;" class="btn-submit btn-small">Set as default</a> <div id="scope-selector"><a href="#" onclick="hps.setAsDef(\'project\'); return false;" class="btn-submit btn-small">Project</a><a href="#" onclick="hps.setAsDef(\'global\'); return false;" class="btn-submit btn-small">Global</a></div>');
+        // $('add_buttons').appendChild(aDiv);
+
+        // Add CSS
+        var styleElement = document.createElement("style");
+        styleElement.type = "text/css";
+        styleElement.appendChild(document.createTextNode('.select_overflow{ overflow:visible !important; } #project_selector_chzn{ margin-bottom:10px; min-width:290px !important; } div.chzn-container ul.chzn-results li{ padding: 4px 7px; } .chzn-results li.group-option{ padding-left: 14px !important; } .chzn-drop { width: 288px !important; } .chzn-search input{ width: 253px !important; } td:first-child .add_day_entry_form{ width:290px; } td.task select{ vertical-align:text-bottom; margin-right:10px !important; } .hps-btns-wrapper{ display:inline-block; float:right; } .hps-btns-wrapper .btn-submit{ margin-right:0; } .hps-btns-wrapper #scope-selector{ display:none; }'));
+        document.getElementsByTagName("head")[0].appendChild(styleElement);
+
+        if(hps.hasSettingsStorage()){
+
+          // Add event listener to changes in selects
+          $$('#project_tasks_selector_cont select.tasks_select').each(function (el) {
+            Event.observe(el, 'change', hps.projTaskSelectChange);
+          });
+
+          hps.prepareSettings();
+
+          Event.observe(window, "beforeunload", function(event) {
+
+            hps.saveSettings();
+
+          });
+
+        }
+
+      }
+
+    },
+    setAsDef: function(scope){
+      var activeProjId = hps.projSelect.value,
+          activeTaskSelect = $('project' + activeProjId + '_task_selector');
+
+      return false;
+    },
+    projTaskSelectChange: function(e){
+      var activeProjId = hps.projSelect.value,
+          activeTaskSelect = $('project' + activeProjId + '_task_selector'),
+          activeTaskId = activeTaskSelect.value,
+          settings = { defaults: {} };
+
+      settings.defaults[activeProjId] = activeTaskId;
+
+      hps.setSettings(settings);
+
+      return false;
+    },
+    extend: function () {
+      //From jQuery 1.6.2 source
+      var options, name, src, copy, copyIsArray, clone, target = arguments[0] || {},
+          i = 1,
+          length = arguments.length,
+          deep = false;
+      if (typeof target === "boolean") {
+          deep = target;
+          target = arguments[1] || {};
+          i = 2;
+      }
+      if (typeof target !== "object" && !jQuery.isFunction(target)) {
+          target = {};
+      }
+      if (length === i) {
+          target = this;
+          --i;
+      }
+      for (; i < length; i++) {
+          if ((options = arguments[i]) != null) {
+              for (name in options) {
+                  src = target[name];
+                  copy = options[name];
+                  if (target === copy) {
+                      continue;
+                  }
+                  if (deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
+                      if (copyIsArray) {
+                          copyIsArray = false;
+                          clone = src && jQuery.isArray(src) ? src : [];
+                      } else {
+                          clone = src && jQuery.isPlainObject(src) ? src : {};
+                      }
+                      target[name] = jQuery.extend(deep, clone, copy);
+                  } else if (copy !== undefined) {
+                      target[name] = copy;
+                  }
+              }
+          }
+      }
+      return target;
     }
 
+
+
   }
+
+  hps.init();
 
 }
 
 setTimeout(function(){
 
   var script = document.createElement('script');
-  script.textContent = '(' + hp.init.toString() + ')();';
+  script.textContent = '(' + wrapper.toString() + ')();';
   document.body.appendChild(script);
 
 }, 0);
