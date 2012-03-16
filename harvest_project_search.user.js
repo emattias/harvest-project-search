@@ -24,16 +24,16 @@ var wrapper = function(){
 
     prepareSettingsCache: function(){
 
-      if(hps.hasSettingsStorage() == 'localStorage'){
-
-        if(hps.settings != undefined){
-          return hps.settings;
-        }
+      if(hps.hasSettingsStorage()){
 
         var settings = localStorage.getItem('hpsSettings');
-            hps.settings = hps.settings ? hps.settings : settings ? JSON.parse(settings) : {};
+            hps.settings = settings ? JSON.parse(settings) : {};
+
+        return true
 
       }
+
+      return false;
 
     },
     setSettingsCache: function(settingsToSet){
@@ -78,13 +78,11 @@ var wrapper = function(){
             Event.observe(el, 'change', hps.projTaskSelectChange);
           });
 
-          hps.prepareSettingsCache();
+          if(hps.prepareSettingsCache()){
 
-          Event.observe(window, "beforeunload", function(event) {
+            Event.observe(window, "beforeunload", hps.saveSettings);
 
-            hps.saveSettings();
-
-          });
+          };
 
         }
 
