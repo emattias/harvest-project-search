@@ -86,6 +86,12 @@ var wrapper = function(){
 
         }
 
+        $('project_task_rows').observe('click',function(e){
+          if($(e.target).hasClassName('graphic') && $(e.target).hasClassName('edit')){
+              new Chosen($$('#project_task_rows .edit_row_fields select[name=project]')[0]);
+          }
+        });
+
       }
 
     },
